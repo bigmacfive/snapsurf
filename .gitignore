@@ -1,6 +1,8 @@
+build/
 node_modules
 dist
 .DS_Store
 *.log
 .vite
-
+third_party/cef_minimal.tar.bz2
+third_party/cef_binary_144.0.20+g55d4901+chromium-144.0.7559.246_macosarm64_minimal/Release/Chromium Embedded Framework.framework/Chromium Embedded Framework

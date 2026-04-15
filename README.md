@@ -1,47 +1,64 @@
-# SnapSurf Browser
+# SnapSurf (CEF Desktop Browser Bootstrap)
 
-Electron + TypeScript + React 기반 웹 브라우저 with 자동화 기능
+SnapSurf is a macOS-first CEF browser starter focused on maximum Chromium compatibility.
 
-## 주요 기능
+## What is implemented now
 
-- 🌐 웹 브라우저 (탭, 네비게이션, 주소창)
-- 🤖 브라우저 자동화 (webview 직접 제어)
-- 💬 자연어 명령으로 자동화 제어
-- 🖱️ 요소 클릭, 텍스트 입력, 페이지 이동 등 자동화 작업
+- CEF browser process + renderer process wiring (`BrowserApp`)
+- Desktop app bundle build via CMake (`SnapSurf.app`)
+- Browser shell orchestration (`BrowserWindow`)
+- Core modules
+  - `TabManager`
+  - `NavigationController`
+  - `DownloadService`
+  - `BookmarkStore` (persistent local storage)
+- Public contracts implemented in code
+  - `openUrl(url)`, `goBack(tabId)`, `goForward(tabId)`, `reload(tabId)`
+  - `createTab(url?)`, `closeTab(tabId)`, `activateTab(tabId)`
+  - `startDownload(url, suggestedFilename?)`, `cancelDownload(downloadId)`
+  - `addBookmark(url, title)`, `removeBookmark(id)`, `listBookmarks()`
 
-## 설치
+## Prerequisites
+
+1. macOS 12+
+2. CMake 3.24+
+3. Xcode command line tools
+4. CEF binary distribution extracted locally
+
+## Configure and build
 
 ```bash
-npm install
+cmake -S . -B build -G Xcode -DSNAPSURF_CEF_ROOT=/absolute/path/to/cef_binary_XXX_macosx64
+cmake --build build --config Release
 ```
 
-## 개발 모드 실행
+The app bundle is produced under:
 
 ```bash
-npm run dev
+build/Release/SnapSurf.app
 ```
 
-## 빌드
+## Run
 
 ```bash
-npm run build
-npm run build:electron
-npm start
+open build/Release/SnapSurf.app
 ```
 
-## 자동화 사용법
+Optional start URL:
 
-1. 툴바의 ⚙ 버튼을 클릭하여 자동화 패널 열기
-2. 자연어 명령 입력 (예: "구글.com으로 이동" 또는 "클릭 'button'")
-3. 또는 빠른 작업 버튼 사용
+```bash
+build/Release/SnapSurf.app/Contents/MacOS/SnapSurf --start-url=https://www.chromium.org
+```
 
-### 지원하는 자연어 명령
+## State paths
 
-- "구글.com으로 이동" / "goto google.com" - 페이지 이동
-- "클릭 'button'" / "click 'selector'" - 요소 클릭
-- "입력 'input' '텍스트'" / "fill 'selector' 'text'" - 텍스트 입력
-- "텍스트 'selector' 가져와" - 요소 텍스트 추출
-- "스크린샷" / "screenshot" - 현재 URL 확인
+- Browser state and logs: `~/Library/Application Support/SnapSurf`
+- Downloads target dir: `~/Downloads`
+- Bookmarks file: `~/Library/Application Support/SnapSurf/bookmarks.tsv`
 
-**참고:** 자동화는 현재 브라우저 창의 webview에서 직접 실행됩니다. 별도 창이 열리지 않습니다.
+## Notes
 
+- Sandbox is enabled when `cef_sandbox` is available; otherwise no-sandbox is used.
+- User-Agent stays Chromium default for compatibility.
+- Popup requests are handled with a tab-policy baseline in `BrowserClient`.
+- UI shell is intentionally minimal in this bootstrap; service APIs are ready for attaching tab/address toolbar UI next.
